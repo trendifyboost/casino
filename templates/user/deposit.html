@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Deposit - Casino Platform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-plus-circle"></i> Deposit Funds</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="amount" class="form-label">Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="amount" 
+                                           name="amount" min="1" step="0.01" required>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="payment_method" class="form-label">Payment Method</label>
+                                <select class="form-select" id="payment_method" name="payment_method" required>
+                                    <option value="">Select payment method</option>
+                                    {% for method in payment_methods %}
+                                    <option value="{{ method.name }}">{{ method.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="transaction_id" class="form-label">Transaction ID</label>
+                            <input type="text" class="form-control" id="transaction_id" 
+                                   name="transaction_id" placeholder="Enter transaction ID from payment app">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="screenshot" class="form-label">Payment Screenshot</label>
+                            <input type="file" class="form-control" id="screenshot" 
+                                   name="screenshot" accept="image/*">
+                            <div class="form-text">Upload a screenshot of your payment confirmation</div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-casino">
+                            <i class="fas fa-paper-plane"></i> Submit Deposit Request
+                        </button>
+                        <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary ms-2">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Payment Instructions -->
+            {% if payment_methods %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> Payment Instructions</h5>
+                </div>
+                <div class="card-body">
+                    {% for method in payment_methods %}
+                    <div class="payment-method mb-3" id="method-{{ method.id }}">
+                        <h6><i class="fas fa-mobile-alt"></i> {{ method.name }}</h6>
+                        <p><strong>Account:</strong> {{ method.account_number }}</p>
+                        {% if method.instructions %}
+                        <p>{{ method.instructions }}</p>
+                        {% endif %}
+                        <hr>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

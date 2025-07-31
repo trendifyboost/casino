@@ -1,0 +1,75 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Game Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-gamepad"></i> Game Management</h1>
+    <a href="{{ url_for('admin.add_game') }}" class="btn btn-success">
+        <i class="fas fa-plus"></i> Add New Game
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5>All Games ({{ games|length }} total)</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Thumbnail</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Win %</th>
+                        <th>Min Bet</th>
+                        <th>Max Bet</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for game in games %}
+                    <tr>
+                        <td>{{ game.id }}</td>
+                        <td>
+                            {% if game.thumbnail %}
+                            <img src="{{ url_for('static', filename='../uploads/' + game.thumbnail) }}" 
+                                 class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
+                            {% else %}
+                            <div class="bg-secondary d-flex align-items-center justify-content-center" 
+                                 style="width: 50px; height: 50px;">
+                                <i class="fas fa-gamepad text-white"></i>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>{{ game.title }}</td>
+                        <td><span class="badge bg-info">{{ game.category.title() }}</span></td>
+                        <td>{{ game.winning_percentage }}%</td>
+                        <td>${{ "%.2f"|format(game.min_bet) }}</td>
+                        <td>${{ "%.2f"|format(game.max_bet) }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if game.is_active else 'danger' }}">
+                                {{ 'Active' if game.is_active else 'Inactive' }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

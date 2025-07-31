@@ -1,0 +1,252 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Withdrawal Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-minus-circle"></i> Withdrawal Management</h1>
+    <div class="btn-group" role="group">
+        <a href="{{ url_for('admin.withdrawals', status='all') }}" 
+           class="btn btn-outline-secondary {{ 'active' if status_filter == 'all' else '' }}">
+            All
+        </a>
+        <a href="{{ url_for('admin.withdrawals', status='pending') }}" 
+           class="btn btn-outline-warning {{ 'active' if status_filter == 'pending' else '' }}">
+            Pending
+        </a>
+        <a href="{{ url_for('admin.withdrawals', status='approved') }}" 
+           class="btn btn-outline-success {{ 'active' if status_filter == 'approved' else '' }}">
+            Approved
+        </a>
+        <a href="{{ url_for('admin.withdrawals', status='rejected') }}" 
+           class="btn btn-outline-danger {{ 'active' if status_filter == 'rejected' else '' }}">
+            Rejected
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5>Withdrawal Requests ({{ withdrawals.total }} total)</h5>
+    </div>
+    <div class="card-body">
+        {% if withdrawals.items %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User</th>
+                        <th>Amount</th>
+                        <th>Payment Method</th>
+                        <th>Account Details</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for withdrawal in withdrawals.items %}
+                    <tr>
+                        <td>{{ withdrawal.id }}</td>
+                        <td>
+                            <strong>{{ withdrawal.user.full_name }}</strong><br>
+                            <small class="text-muted">{{ withdrawal.user.phone }}</small><br>
+                            <small class="text-info">Balance: ${{ "%.2f"|format(withdrawal.user.balance) }}</small>
+                        </td>
+                        <td class="text-danger">
+                            <strong>${{ "%.2f"|format(withdrawal.amount) }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ withdrawal.payment_method }}</span>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                    data-bs-toggle="modal" data-bs-target="#detailsModal{{ withdrawal.id }}">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ 'warning' if withdrawal.status == 'pending' else 'success' if withdrawal.status == 'approved' else 'danger' }}">
+                                {{ withdrawal.status.title() }}
+                            </span>
+                        </td>
+                        <td>{{ withdrawal.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            {% if withdrawal.status == 'pending' %}
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-success" 
+                                        data-bs-toggle="modal" data-bs-target="#processModal{{ withdrawal.id }}" 
+                                        data-action="approve">
+                                    <i class="fas fa-check"></i> Approve
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger" 
+                                        data-bs-toggle="modal" data-bs-target="#processModal{{ withdrawal.id }}" 
+                                        data-action="reject">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            </div>
+                            {% else %}
+                            <span class="text-muted">Processed</span>
+                            {% if withdrawal.admin_notes %}
+                            <button type="button" class="btn btn-sm btn-outline-info" 
+                                    data-bs-toggle="tooltip" title="{{ withdrawal.admin_notes }}">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                            {% endif %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if withdrawals.pages > 1 %}
+        <nav aria-label="Withdrawal pagination">
+            <ul class="pagination justify-content-center">
+                {% if withdrawals.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.withdrawals', page=withdrawals.prev_num, status=status_filter) }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page in withdrawals.iter_pages() %}
+                    {% if page %}
+                        {% if page != withdrawals.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin.withdrawals', page=page, status=status_filter) }}">{{ page }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">…</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if withdrawals.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.withdrawals', page=withdrawals.next_num, status=status_filter) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No withdrawal requests found</h5>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modals for each withdrawal -->
+{% for withdrawal in withdrawals.items %}
+<!-- Account Details Modal -->
+<div class="modal fade" id="detailsModal{{ withdrawal.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Account Details - Withdrawal #{{ withdrawal.id }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <strong>User:</strong> {{ withdrawal.user.full_name }}<br>
+                    <strong>Phone:</strong> {{ withdrawal.user.phone }}<br>
+                    <strong>Amount:</strong> ${{ "%.2f"|format(withdrawal.amount) }}<br>
+                    <strong>Payment Method:</strong> {{ withdrawal.payment_method }}
+                </div>
+                <div class="mb-3">
+                    <strong>Account Details:</strong>
+                    <div class="mt-2 p-3 bg-light border rounded">
+                        {{ withdrawal.account_details|nl2br }}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Process Modal -->
+{% if withdrawal.status == 'pending' %}
+<div class="modal fade" id="processModal{{ withdrawal.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Process Withdrawal #{{ withdrawal.id }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin.process_withdrawal', withdrawal_id=withdrawal.id) }}">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Warning:</strong> User's current balance is ${{ "%.2f"|format(withdrawal.user.balance) }}. 
+                        {% if withdrawal.amount > withdrawal.user.balance %}
+                        <span class="text-danger">Insufficient balance for this withdrawal!</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>User:</strong> {{ withdrawal.user.full_name }} ({{ withdrawal.user.phone }})<br>
+                        <strong>Withdrawal Amount:</strong> ${{ "%.2f"|format(withdrawal.amount) }}<br>
+                        <strong>Payment Method:</strong> {{ withdrawal.payment_method }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Account Details:</strong>
+                        <div class="mt-2 p-3 bg-light border rounded">
+                            {{ withdrawal.account_details|nl2br }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="admin_notes{{ withdrawal.id }}" class="form-label">Admin Notes</label>
+                        <textarea class="form-control" id="admin_notes{{ withdrawal.id }}" 
+                                  name="admin_notes" rows="3" 
+                                  placeholder="Add notes about this withdrawal..."></textarea>
+                    </div>
+                    
+                    <input type="hidden" name="action" id="action{{ withdrawal.id }}">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    {% if withdrawal.amount <= withdrawal.user.balance %}
+                    <button type="submit" class="btn btn-success" onclick="document.getElementById('action{{ withdrawal.id }}').value='approve'">
+                        <i class="fas fa-check"></i> Approve Withdrawal
+                    </button>
+                    {% endif %}
+                    <button type="submit" class="btn btn-danger" onclick="document.getElementById('action{{ withdrawal.id }}').value='reject'">
+                        <i class="fas fa-times"></i> Reject Withdrawal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Add nl2br filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    var elements = document.querySelectorAll('[data-nl2br]');
+    elements.forEach(function(element) {
+        element.innerHTML = element.innerHTML.replace(/\n/g, '<br>');
+    });
+});
+</script>
+{% endblock %}

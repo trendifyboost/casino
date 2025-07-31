@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to Casino Platform{% endblock %}
+
+{% block content %}
+<!-- Hero Slider -->
+{% if sliders %}
+<div id="heroCarousel" class="carousel slide casino-hero" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+        {% for slider in sliders %}
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ loop.index0 }}" 
+                class="{{ 'active' if loop.first }}" aria-current="true"></button>
+        {% endfor %}
+    </div>
+    
+    <div class="carousel-inner">
+        {% for slider in sliders %}
+        <div class="carousel-item {{ 'active' if loop.first }}">
+            {% if slider.link_url %}
+            <a href="{{ slider.link_url }}">
+            {% endif %}
+                <img src="{{ url_for('static', filename='../uploads/' + slider.image_path) }}" 
+                     class="d-block w-100" alt="{{ slider.title }}">
+                {% if slider.title %}
+                <div class="carousel-caption d-none d-md-block">
+                    <h5>{{ slider.title }}</h5>
+                </div>
+                {% endif %}
+            {% if slider.link_url %}
+            </a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+    </button>
+</div>
+{% endif %}
+
+<!-- Welcome Section -->
+<section class="py-5 bg-dark text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">
+                    Welcome to <span class="text-casino">Casino Platform</span>
+                </h1>
+                <p class="lead mb-4">
+                    Experience the thrill of online gaming with our premium casino platform. 
+                    Join thousands of players and start winning today!
+                </p>
+                {% if not session.user_id %}
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-casino btn-lg">
+                        <i class="fas fa-user-plus"></i> Get Started
+                    </a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                </div>
+                {% else %}
+                <a href="{{ url_for('user.dashboard') }}" class="btn btn-casino btn-lg">
+                    <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+                </a>
+                {% endif %}
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="casino-icons">
+                    <i class="fas fa-dice-one casino-icon"></i>
+                    <i class="fas fa-dice-two casino-icon"></i>
+                    <i class="fas fa-dice-three casino-icon"></i>
+                    <i class="fas fa-coins casino-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Games -->
+{% if games %}
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">
+            <i class="fas fa-star text-casino"></i> Featured Games
+        </h2>
+        
+        <div class="row">
+            {% for game in games %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="game-card">
+                    {% if game.thumbnail %}
+                    <img src="{{ url_for('static', filename='../uploads/' + game.thumbnail) }}" 
+                         class="game-thumbnail" alt="{{ game.title }}">
+                    {% else %}
+                    <div class="game-placeholder">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="game-info">
+                        <h5 class="game-title">{{ game.title }}</h5>
+                        <p class="game-category">{{ game.category.title() }}</p>
+                        
+                        {% if session.user_id %}
+                        <a href="{{ url_for('main.play_game', game_id=game.id) }}" 
+                           class="btn btn-casino btn-sm">
+                            <i class="fas fa-play"></i> Play Now
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-sign-in-alt"></i> Login to Play
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{{ url_for('main.games') }}" class="btn btn-outline-casino">
+                <i class="fas fa-gamepad"></i> View All Games
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Features Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Why Choose Us?</h2>
+        
+        <div class="row">
+            <div class="col-md-4 text-center mb-4">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt text-casino"></i>
+                </div>
+                <h4>Secure & Safe</h4>
+                <p>Your funds and personal information are protected with bank-level security.</p>
+            </div>
+            
+            <div class="col-md-4 text-center mb-4">
+                <div class="feature-icon">
+                    <i class="fas fa-bolt text-casino"></i>
+                </div>
+                <h4>Instant Deposits</h4>
+                <p>Quick and easy deposit methods to get you playing in minutes.</p>
+            </div>
+            
+            <div class="col-md-4 text-center mb-4">
+                <div class="feature-icon">
+                    <i class="fas fa-gift text-casino"></i>
+                </div>
+                <h4>Bonus & Rewards</h4>
+                <p>Generous bonuses and referral rewards to maximize your winnings.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Withdraw - Casino Platform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-minus-circle"></i> Withdraw Funds</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Available Balance:</strong> ${{ "%.2f"|format(user.balance) }}
+                    </div>
+                    
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="amount" class="form-label">Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="amount" 
+                                           name="amount" min="1" max="{{ user.balance }}" 
+                                           step="0.01" required>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="payment_method" class="form-label">Payment Method</label>
+                                <select class="form-select" id="payment_method" name="payment_method" required>
+                                    <option value="">Select payment method</option>
+                                    {% for method in payment_methods %}
+                                    <option value="{{ method.name }}">{{ method.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="account_details" class="form-label">Account Details</label>
+                            <textarea class="form-control" id="account_details" name="account_details" 
+                                      rows="3" required placeholder="Enter your account number and any additional details"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-paper-plane"></i> Submit Withdrawal Request
+                        </button>
+                        <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary ms-2">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Withdrawal Notice -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-exclamation-triangle"></i> Important Notice</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li>Withdrawal requests are processed within 24-48 hours</li>
+                        <li>Minimum withdrawal amount is $10</li>
+                        <li>Processing fees may apply depending on payment method</li>
+                        <li>Ensure your account details are correct to avoid delays</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

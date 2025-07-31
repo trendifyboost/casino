@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+
+{% block title %}{{ game.title }} - Casino Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+    <!-- Game Header -->
+    <div class="row mb-3">
+        <div class="col-lg-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3>{{ game.title }}</h3>
+                    <span class="badge bg-casino me-2">{{ game.category.title() }}</span>
+                    <span class="badge bg-info">Min: ${{ "%.2f"|format(game.min_bet) }}</span>
+                    <span class="badge bg-warning">Max: ${{ "%.2f"|format(game.max_bet) }}</span>
+                </div>
+                <div>
+                    <a href="{{ url_for('main.games') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Games
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Game Container -->
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="card game-container">
+                <div class="card-body p-0">
+                    {% if game.game_file %}
+                        {% if game.game_file.endswith('.html') %}
+                        <!-- HTML Game -->
+                        <iframe src="{{ url_for('static', filename='../uploads/' + game.game_file) }}" 
+                                class="game-frame" frameborder="0"></iframe>
+                        {% elif game.game_file.startswith('http') %}
+                        <!-- External URL -->
+                        <iframe src="{{ game.game_file }}" class="game-frame" frameborder="0"></iframe>
+                        {% else %}
+                        <!-- File Download or Other -->
+                        <div class="text-center py-5">
+                            <i class="fas fa-download fa-3x text-muted mb-3"></i>
+                            <h4>Download Game</h4>
+                            <p class="text-muted">This game requires download to play</p>
+                            <a href="{{ url_for('static', filename='../uploads/' + game.game_file) }}" 
+                               class="btn btn-casino" download>
+                                <i class="fas fa-download"></i> Download {{ game.title }}
+                            </a>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <!-- Demo Game Placeholder -->
+                        <div class="demo-game-container">
+                            <div class="demo-game-content">
+                                <div class="text-center py-5">
+                                    <i class="fas fa-gamepad fa-4x text-casino mb-4"></i>
+                                    <h2>{{ game.title }}</h2>
+                                    <p class="lead">{{ game.category.title() }} Game</p>
+                                    
+                                    <div class="row justify-content-center mb-4">
+                                        <div class="col-md-8">
+                                            <div class="card bg-dark text-white">
+                                                <div class="card-body">
+                                                    <h5>Game Information</h5>
+                                                    <div class="row">
+                                                        <div class="col-4 text-center">
+                                                            <h4 class="text-success">{{ game.winning_percentage }}%</h4>
+                                                            <small>Win Rate</small>
+                                                        </div>
+                                                        <div class="col-4 text-center">
+                                                            <h4 class="text-warning">${{ "%.2f"|format(game.min_bet) }}</h4>
+                                                            <small>Min Bet</small>
+                                                        </div>
+                                                        <div class="col-4 text-center">
+                                                            <h4 class="text-danger">${{ "%.2f"|format(game.max_bet) }}</h4>
+                                                            <small>Max Bet</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Demo Game Interface -->
+                                    <div class="demo-game-interface">
+                                        <div class="betting-controls mb-4">
+                                            <div class="row justify-content-center">
+                                                <div class="col-md-6">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">Bet Amount ($)</span>
+                                                        <input type="number" class="form-control" id="betAmount" 
+                                                               min="{{ game.min_bet }}" max="{{ game.max_bet }}" 
+                                                               value="{{ game.min_bet }}" step="0.01">
+                                                        <button class="btn btn-outline-casino" onclick="placeBet()">
+                                                            <i class="fas fa-dice"></i> Place Bet
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div id="gameResult" class="game-result" style="display: none;">
+                                            <!-- Game results will appear here -->
+                                        </div>
+                                        
+                                        <div class="game-stats mt-4">
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <div class="stat-card">
+                                                        <h5 id="totalBets">0</h5>
+                                                        <small>Total Bets</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="stat-card">
+                                                        <h5 id="totalWins">0</h5>
+                                                        <small>Total Wins</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="stat-card">
+                                                        <h5 id="totalWagered">$0.00</h5>
+                                                        <small>Total Wagered</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="stat-card">
+                                                        <h5 id="netProfit">$0.00</h5>
+                                                        <small>Net Profit</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <!-- User Balance -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6><i class="fas fa-wallet"></i> Account Balance</h6>
+                </div>
+                <div class="card-body text-center">
+                    <h4 class="text-success">${{ "%.2f"|format(session.user_balance or 0) }}</h4>
+                    <small class="text-muted">Available Balance</small>
+                    <hr>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('user.deposit') }}" class="btn btn-success btn-sm flex-fill">
+                            <i class="fas fa-plus"></i> Deposit
+                        </a>
+                        <a href="{{ url_for('user.withdraw') }}" class="btn btn-warning btn-sm flex-fill">
+                            <i class="fas fa-minus"></i> Withdraw
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Game Rules -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6><i class="fas fa-info-circle"></i> Game Rules</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-success"></i> Minimum bet: ${{ "%.2f"|format(game.min_bet) }}</li>
+                        <li><i class="fas fa-check text-success"></i> Maximum bet: ${{ "%.2f"|format(game.max_bet) }}</li>
+                        <li><i class="fas fa-check text-success"></i> Win rate: {{ game.winning_percentage }}%</li>
+                        <li><i class="fas fa-check text-success"></i> Instant payouts</li>
+                        <li><i class="fas fa-check text-success"></i> Fair play guaranteed</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Recent Games -->
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-history"></i> Other Games</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('main.games', category='slots') }}" class="btn btn-outline-casino btn-sm">
+                            <i class="fas fa-dice"></i> Slots
+                        </a>
+                        <a href="{{ url_for('main.games', category='crash') }}" class="btn btn-outline-casino btn-sm">
+                            <i class="fas fa-chart-line"></i> Crash Games
+                        </a>
+                        <a href="{{ url_for('main.games', category='live') }}" class="btn btn-outline-casino btn-sm">
+                            <i class="fas fa-video"></i> Live Casino
+                        </a>
+                        <a href="{{ url_for('main.games') }}" class="btn btn-casino btn-sm">
+                            <i class="fas fa-gamepad"></i> All Games
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional CSS for game interface -->
+<style>
+.game-container {
+    min-height: 600px;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+}
+
+.game-frame {
+    width: 100%;
+    height: 600px;
+    background: #000;
+}
+
+.demo-game-container {
+    min-height: 600px;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.demo-game-content {
+    width: 100%;
+    max-width: 800px;
+    padding: 2rem;
+}
+
+.stat-card {
+    background: rgba(255, 215, 0, 0.1);
+    padding: 1rem;
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.game-result {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.bet-win {
+    color: #28a745;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.bet-lose {
+    color: #dc3545;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .game-frame {
+        height: 400px;
+    }
+    
+    .demo-game-container {
+        min-height: 400px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Demo game functionality
+let gameStats = {
+    totalBets: 0,
+    totalWins: 0,
+    totalWagered: 0,
+    netProfit: 0
+};
+
+function placeBet() {
+    const betAmount = parseFloat(document.getElementById('betAmount').value);
+    const winRate = {{ game.winning_percentage }};
+    
+    if (betAmount < {{ game.min_bet }} || betAmount > {{ game.max_bet }}) {
+        alert(`Bet amount must be between ${{ "%.2f"|format(game.min_bet) }} and ${{ "%.2f"|format(game.max_bet) }}`);
+        return;
+    }
+    
+    // Simulate game result
+    const isWin = Math.random() * 100 < winRate;
+    const resultDiv = document.getElementById('gameResult');
+    
+    gameStats.totalBets++;
+    gameStats.totalWagered += betAmount;
+    
+    if (isWin) {
+        gameStats.totalWins++;
+        const winAmount = betAmount * 2; // 2x multiplier for demo
+        gameStats.netProfit += (winAmount - betAmount);
+        
+        resultDiv.innerHTML = `
+            <div class="bet-win">
+                <i class="fas fa-trophy"></i> YOU WIN!
+                <div class="mt-2">
+                    <div>Bet: $${betAmount.toFixed(2)}</div>
+                    <div>Win: $${winAmount.toFixed(2)}</div>
+                    <div>Profit: $${(winAmount - betAmount).toFixed(2)}</div>
+                </div>
+            </div>
+        `;
+    } else {
+        gameStats.netProfit -= betAmount;
+        
+        resultDiv.innerHTML = `
+            <div class="bet-lose">
+                <i class="fas fa-times-circle"></i> YOU LOSE!
+                <div class="mt-2">
+                    <div>Bet: $${betAmount.toFixed(2)}</div>
+                    <div>Lost: $${betAmount.toFixed(2)}</div>
+                </div>
+            </div>
+        `;
+    }
+    
+    resultDiv.style.display = 'block';
+    updateStats();
+    
+    // Hide result after 3 seconds
+    setTimeout(() => {
+        resultDiv.style.display = 'none';
+    }, 3000);
+}
+
+function updateStats() {
+    document.getElementById('totalBets').textContent = gameStats.totalBets;
+    document.getElementById('totalWins').textContent = gameStats.totalWins;
+    document.getElementById('totalWagered').textContent = `$${gameStats.totalWagered.toFixed(2)}`;
+    document.getElementById('netProfit').textContent = `$${gameStats.netProfit.toFixed(2)}`;
+    document.getElementById('netProfit').className = gameStats.netProfit >= 0 ? 'text-success' : 'text-danger';
+}
+
+// Initialize stats on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateStats();
+    
+    // Add keyboard shortcut for betting (Enter key)
+    document.getElementById('betAmount').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            placeBet();
+        }
+    });
+});
+</script>
+{% endblock %}

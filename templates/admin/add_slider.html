@@ -1,0 +1,195 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Add New Slider{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-plus-circle"></i> Add New Slider</h1>
+    <a href="{{ url_for('admin.sliders') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Sliders
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Slider Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Slider Image <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="image" name="image" 
+                               accept="image/*" required>
+                        <div class="form-text">Upload a banner image for the homepage slider (JPG, PNG, WebP)</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Slider Title</label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               placeholder="Optional title for the slider">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="link_url" class="form-label">Link URL</label>
+                        <input type="url" class="form-control" id="link_url" name="link_url" 
+                               placeholder="https://example.com (optional)">
+                        <div class="form-text">URL to redirect when slider is clicked (optional)</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="order_position" class="form-label">Display Order</label>
+                            <input type="number" class="form-control" id="order_position" 
+                                   name="order_position" min="0" value="0">
+                            <div class="form-text">Lower numbers appear first (0 = first)</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Status</label>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="is_active" 
+                                       name="is_active" checked>
+                                <label class="form-check-label" for="is_active">
+                                    <strong>Activate Slider</strong>
+                                    <small class="text-muted d-block">Make this slider visible on homepage</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Add Slider
+                        </button>
+                        <a href="{{ url_for('admin.sliders') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> Image Guidelines</h5>
+            </div>
+            <div class="card-body">
+                <h6>Requirements:</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success"></i> Max file size: 5MB</li>
+                    <li><i class="fas fa-check text-success"></i> Formats: JPG, PNG, WebP</li>
+                    <li><i class="fas fa-check text-success"></i> Recommended size: 1200x400px</li>
+                    <li><i class="fas fa-check text-success"></i> Aspect ratio: 3:1 (wide)</li>
+                </ul>
+                
+                <hr>
+                
+                <h6>Best Practices:</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-star text-warning"></i> Use high-quality images</li>
+                    <li><i class="fas fa-star text-warning"></i> Include promotional text</li>
+                    <li><i class="fas fa-star text-warning"></i> Keep text readable</li>
+                    <li><i class="fas fa-star text-warning"></i> Use consistent branding</li>
+                </ul>
+                
+                <hr>
+                
+                <h6>Display Order:</h6>
+                <p class="text-muted small">
+                    Sliders are displayed in ascending order. Use order values like:
+                </p>
+                <ul class="list-unstyled">
+                    <li><span class="badge bg-primary">0</span> Featured promotion</li>
+                    <li><span class="badge bg-secondary">1</span> New games</li>
+                    <li><span class="badge bg-info">2</span> Bonus offers</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="fas fa-eye"></i> Preview</h5>
+            </div>
+            <div class="card-body">
+                <div id="imagePreview" class="text-center text-muted">
+                    <i class="fas fa-image fa-3x mb-2"></i>
+                    <p>Select an image to see preview</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var imageInput = document.getElementById('image');
+    var previewContainer = document.getElementById('imagePreview');
+    
+    imageInput.addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                previewContainer.innerHTML = `
+                    <img src="${e.target.result}" class="img-fluid rounded" style="max-height: 200px;">
+                    <div class="mt-2">
+                        <div class="text-success small">
+                            <i class="fas fa-file-image"></i> ${file.name}
+                        </div>
+                        <div class="text-muted small">
+                            Size: ${(file.size / 1024 / 1024).toFixed(2)} MB
+                        </div>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
+        } else if (file) {
+            previewContainer.innerHTML = `
+                <div class="text-danger">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                    <p>Please select a valid image file</p>
+                </div>
+            `;
+        }
+    });
+    
+    // Form validation
+    var form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        var imageFile = imageInput.files[0];
+        
+        if (!imageFile) {
+            e.preventDefault();
+            alert('Please select an image file.');
+            return;
+        }
+        
+        if (imageFile.size > 5 * 1024 * 1024) {
+            e.preventDefault();
+            alert('Image file is too large. Please select a file smaller than 5MB.');
+            return;
+        }
+        
+        if (!imageFile.type.startsWith('image/')) {
+            e.preventDefault();
+            alert('Please select a valid image file.');
+            return;
+        }
+    });
+    
+    // URL validation
+    var linkUrlInput = document.getElementById('link_url');
+    linkUrlInput.addEventListener('blur', function() {
+        if (this.value && !this.value.startsWith('http://') && !this.value.startsWith('https://')) {
+            this.value = 'https://' + this.value;
+        }
+    });
+});
+</script>
+{% endblock %}

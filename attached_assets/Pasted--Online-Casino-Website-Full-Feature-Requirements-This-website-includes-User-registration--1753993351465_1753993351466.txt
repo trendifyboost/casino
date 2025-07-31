@@ -1,0 +1,244 @@
+🎰 Online Casino Website – Full Feature Requirements
+This website includes:
+
+User registration & login
+
+User dashboard
+
+Admin panel
+
+Game management
+
+Deposit & withdrawal system
+
+Referral and commission system
+
+Clickable homepage image slider (managed from admin panel)
+
+Fully compatible with shared hosting (no Laravel/Node required)
+
+👤 User System
+🔐 User Registration
+Full Name
+
+Phone Number
+
+Password
+
+Confirm Password
+
+🔑 User Login
+Phone Number or Username
+
+Password
+
+🧑‍💼 User Dashboard Features
+Profile Icon
+
+Display Name & Phone Number
+
+Wallet Balance
+
+Change Password
+
+Bonus Amount
+
+Referral Commission
+
+Deposit Option
+
+Withdraw Option
+
+Referral Link (copyable)
+
+Organized in a clean UI layout:
+
+Sidebar (Profile, Balance, Bonus, Referrals)
+
+Top Bar (Greeting, Profile dropdown)
+
+Center Panel (Deposit, Withdraw, Transactions)
+
+🏠 Homepage Features
+Clickable image slider (banner-style)
+
+Sliders can be uploaded/changed from admin panel
+
+Each slider image supports optional link (e.g., game, promo)
+
+🔐 Admin Login
+Admin URL: yourdomain.com/admin
+
+Default Credentials:
+
+Username: admin
+
+Password: admin
+
+After login, redirect to Admin Dashboard.
+
+✅ Admin Panel – Module Overview
+📊 1. Dashboard Overview
+Total Users
+
+Total Deposits
+
+Total Withdrawals
+
+Total Games
+
+Today’s Deposits
+
+Today’s Withdrawals
+
+Pending Requests
+
+Top Referral Users
+
+⚙️ 2. General Settings
+Website Name
+
+Favicon Upload
+
+Logo Upload
+
+Tagline
+
+Meta Title, Meta Description, Keywords
+
+Default Currency (e.g., BDT, USD)
+
+Enable/Disable Maintenance Mode
+
+Custom Footer Text
+
+💸 3. Payment Configuration
+Manage manual payment methods (e.g., bKash, Nagad, Rocket):
+
+Add New Method
+
+Method Name
+
+Account Number
+
+Payment Instructions
+
+Edit / Delete methods
+
+📥 4. Deposit Requests
+View list of all deposit requests
+
+Filter by status: Pending / Approved / Rejected
+
+Approve or Reject
+
+View associated user
+
+Option to add bonus automatically if configured
+
+📤 5. Withdrawal Requests
+View withdrawal request list
+
+Filter by status: Pending / Approved / Rejected
+
+Approve or Reject
+
+Deduct balance automatically from user wallet
+
+VAT or service charge deduction feature
+
+🎮 6. Game Management
+Add New Game:
+Upload Game File (zip/html/php or external URL)
+
+Game Title
+
+Select Category (Crash, Slots, Live, etc.)
+
+Thumbnail Upload
+
+Winning Percentage (%)
+
+Min & Max Bet (optional)
+
+Manage Games:
+Edit existing game
+
+Delete game
+
+Activate / Deactivate
+
+👥 7. User Management
+View all registered users
+
+Name, Phone, Balance, Referral Code
+
+View & Edit user profile
+
+Change wallet balance manually
+
+Reset user password
+
+Ban or Unban user
+
+🎁 8. Bonus & Referral Settings
+Sign Up Bonus
+
+Deposit Bonus Percentage
+
+Referral Commission Percentage
+
+Multi-level commission support (Level 1, 2, etc.)
+
+📬 9. Notifications / Messaging
+Send global announcements to all users
+
+Send message to a specific user
+
+(Optional) Manage email templates for alerts
+
+📜 10. Logs & History
+Admin Login History
+
+Deposit and Withdrawal History
+
+Game Play Logs (optional)
+
+Actions performed by Admins (logs of changes)
+
+👨‍💼 11. Admin User Roles (Advanced)
+Optional, for team-based access:
+
+Add new Admin
+
+Define roles & permissions:
+
+Super Admin
+
+Game Manager
+
+Payment Manager
+
+🔒 Additional (Optional but Important) Features
+Manual Transaction Entry
+
+KYC Verification System (ID, Address proof upload)
+
+Currency Converter or Multi-Currency Support
+
+SEO Settings (Meta tags per page)
+
+Backup & Restore functionality
+
+Auto update/patch interface (optional)
+
+✅ Shared Hosting Compatibility
+The system will:
+
+Use core PHP with MySQL
+
+Use standard .htaccess for routing/admin URL protection
+
+Avoid frameworks like Laravel/NodeJS (unless requested)
+
+Use Bootstrap or simple HTML/CSS/JS for UI

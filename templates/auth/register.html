@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Casino Platform{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <h2><i class="fas fa-user-plus"></i> Register</h2>
+                        <p>Join our casino platform today!</p>
+                    </div>
+                    
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="full_name" class="form-label">
+                                <i class="fas fa-user"></i> Full Name
+                            </label>
+                            <input type="text" class="form-control" id="full_name" 
+                                   name="full_name" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">
+                                <i class="fas fa-phone"></i> Phone Number
+                            </label>
+                            <input type="tel" class="form-control" id="phone" 
+                                   name="phone" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock"></i> Password
+                            </label>
+                            <input type="password" class="form-control" id="password" 
+                                   name="password" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="confirm_password" class="form-label">
+                                <i class="fas fa-lock"></i> Confirm Password
+                            </label>
+                            <input type="password" class="form-control" id="confirm_password" 
+                                   name="confirm_password" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="referral_code" class="form-label">
+                                <i class="fas fa-gift"></i> Referral Code (Optional)
+                            </label>
+                            <input type="text" class="form-control" id="referral_code" 
+                                   name="referral_code" placeholder="Enter referral code">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-casino w-100 mb-3">
+                            <i class="fas fa-user-plus"></i> Register
+                        </button>
+                    </form>
+                    
+                    <div class="auth-footer">
+                        <p>Already have an account? 
+                           <a href="{{ url_for('auth.login') }}" class="text-casino">Login here</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

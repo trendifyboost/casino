@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Games - Casino Platform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Page Header -->
+    <div class="row mb-5">
+        <div class="col-lg-12 text-center">
+            <h1 class="display-4">
+                <i class="fas fa-gamepad text-casino"></i> Games
+            </h1>
+            <p class="lead">Discover our exciting collection of casino games</p>
+        </div>
+    </div>
+    
+    <!-- Game Categories Filter -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="d-flex justify-content-center">
+                <div class="btn-group" role="group">
+                    <a href="{{ url_for('main.games', category='all') }}" 
+                       class="btn btn-{{ 'casino' if category == 'all' else 'outline-casino' }}">
+                        <i class="fas fa-th"></i> All Games
+                    </a>
+                    <a href="{{ url_for('main.games', category='slots') }}" 
+                       class="btn btn-{{ 'casino' if category == 'slots' else 'outline-casino' }}">
+                        <i class="fas fa-dice"></i> Slots
+                    </a>
+                    <a href="{{ url_for('main.games', category='crash') }}" 
+                       class="btn btn-{{ 'casino' if category == 'crash' else 'outline-casino' }}">
+                        <i class="fas fa-chart-line"></i> Crash
+                    </a>
+                    <a href="{{ url_for('main.games', category='live') }}" 
+                       class="btn btn-{{ 'casino' if category == 'live' else 'outline-casino' }}">
+                        <i class="fas fa-video"></i> Live Casino
+                    </a>
+                    <a href="{{ url_for('main.games', category='table') }}" 
+                       class="btn btn-{{ 'casino' if category == 'table' else 'outline-casino' }}">
+                        <i class="fas fa-table"></i> Table Games
+                    </a>
+                    <a href="{{ url_for('main.games', category='poker') }}" 
+                       class="btn btn-{{ 'casino' if category == 'poker' else 'outline-casino' }}">
+                        <i class="fas fa-spade"></i> Poker
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Games Grid -->
+    {% if games %}
+    <div class="row">
+        {% for game in games %}
+        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 mb-4">
+            <div class="game-card">
+                <!-- Game Thumbnail -->
+                <div class="position-relative">
+                    {% if game.thumbnail %}
+                    <img src="{{ url_for('static', filename='../uploads/' + game.thumbnail) }}" 
+                         class="game-thumbnail" alt="{{ game.title }}">
+                    {% else %}
+                    <div class="game-placeholder">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Game Category Badge -->
+                    <div class="position-absolute top-0 end-0 p-2">
+                        <span class="badge bg-casino">{{ game.category.title() }}</span>
+                    </div>
+                    
+                    <!-- Play Overlay -->
+                    <div class="game-overlay">
+                        {% if session.user_id %}
+                        <a href="{{ url_for('main.play_game', game_id=game.id) }}" 
+                           class="btn btn-casino btn-lg">
+                            <i class="fas fa-play"></i> Play Now
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-casino btn-lg">
+                            <i class="fas fa-sign-in-alt"></i> Login to Play
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Game Info -->
+                <div class="game-info">
+                    <h5 class="game-title">{{ game.title }}</h5>
+                    <p class="game-category">{{ game.category.title() }}</p>
+                    
+                    <div class="game-stats">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <small class="text-muted">Min Bet</small>
+                                <div class="fw-bold">${{ "%.2f"|format(game.min_bet) }}</div>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">Max Bet</small>
+                                <div class="fw-bold">${{ "%.2f"|format(game.max_bet) }}</div>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">Win Rate</small>
+                                <div class="fw-bold text-success">{{ game.winning_percentage }}%</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if session.user_id %}
+                    <a href="{{ url_for('main.play_game', game_id=game.id) }}" 
+                       class="btn btn-casino btn-sm w-100 mt-2">
+                        <i class="fas fa-play"></i> Play Now
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-casino btn-sm w-100 mt-2">
+                        <i class="fas fa-sign-in-alt"></i> Login to Play
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% else %}
+    <!-- No Games Found -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="text-center py-5">
+                <i class="fas fa-gamepad fa-4x text-muted mb-4"></i>
+                <h3 class="text-muted">No Games Found</h3>
+                <p class="text-muted">
+                    {% if category != 'all' %}
+                    No games available in the {{ category.title() }} category.
+                    {% else %}
+                    No games are currently available.
+                    {% endif %}
+                </p>
+                <a href="{{ url_for('main.games', category='all') }}" class="btn btn-casino">
+                    <i class="fas fa-refresh"></i> View All Games
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Additional CSS for game cards -->
+<style>
+.game-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.game-card:hover .game-overlay {
+    opacity: 1;
+}
+
+.game-stats {
+    background: rgba(255, 215, 0, 0.1);
+    padding: 1rem;
+    border-radius: 10px;
+    margin: 1rem 0;
+}
+
+.game-card {
+    transition: all 0.3s ease;
+}
+
+.game-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(255, 215, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        border-radius: 0.375rem !important;
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add loading states to play buttons
+    var playButtons = document.querySelectorAll('a[href*="play_game"]');
+    playButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            var originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            this.classList.add('disabled');
+            
+            // Reset after 3 seconds if page doesn't change
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.classList.remove('disabled');
+            }, 3000);
+        });
+    });
+    
+    // Smooth scroll for category filter
+    var categoryButtons = document.querySelectorAll('.btn-group a');
+    categoryButtons.forEach(function(button) {
+        button.addEventListener('click', function(e) {
+            // Add loading effect
+            var originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+        });
+    });
+});
+</script>
+{% endblock %}

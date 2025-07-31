@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Casino Platform{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-3 col-md-4">
+                <div class="dashboard-sidebar">
+                    <div class="user-profile">
+                        <div class="avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <h5>{{ user.full_name }}</h5>
+                        <p class="text-muted">{{ user.phone }}</p>
+                    </div>
+                    
+                    <nav class="sidebar-nav">
+                        <a href="{{ url_for('user.dashboard') }}" class="nav-item active">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                        <a href="{{ url_for('user.deposit') }}" class="nav-item">
+                            <i class="fas fa-plus-circle"></i> Deposit
+                        </a>
+                        <a href="{{ url_for('user.withdraw') }}" class="nav-item">
+                            <i class="fas fa-minus-circle"></i> Withdraw
+                        </a>
+                        <a href="{{ url_for('user.profile') }}" class="nav-item">
+                            <i class="fas fa-user-cog"></i> Profile
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-lg-9 col-md-8">
+                <div class="dashboard-header">
+                    <h2>Welcome back, {{ user.full_name.split()[0] }}!</h2>
+                    <p class="text-muted">Manage your account and track your gaming activity</p>
+                </div>
+                
+                <!-- Balance Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <div class="balance-card wallet">
+                            <div class="balance-icon">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div class="balance-info">
+                                <h4>${{ "%.2f"|format(user.balance) }}</h4>
+                                <p>Wallet Balance</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="balance-card bonus">
+                            <div class="balance-icon">
+                                <i class="fas fa-gift"></i>
+                            </div>
+                            <div class="balance-info">
+                                <h4>${{ "%.2f"|format(user.bonus_balance) }}</h4>
+                                <p>Bonus Balance</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="balance-card commission">
+                            <div class="balance-icon">
+                                <i class="fas fa-handshake"></i>
+                            </div>
+                            <div class="balance-info">
+                                <h4>${{ "%.2f"|format(user.referral_commission) }}</h4>
+                                <p>Referral Commission</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <div class="action-card">
+                            <h5><i class="fas fa-plus-circle text-success"></i> Deposit Funds</h5>
+                            <p>Add money to your account instantly</p>
+                            <a href="{{ url_for('user.deposit') }}" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Deposit Now
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="action-card">
+                            <h5><i class="fas fa-minus-circle text-warning"></i> Withdraw Funds</h5>
+                            <p>Request withdrawal of your winnings</p>
+                            <a href="{{ url_for('user.withdraw') }}" class="btn btn-warning">
+                                <i class="fas fa-minus"></i> Withdraw
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Referral Section -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-users"></i> Referral Program</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6>Your Referral Code: <span class="text-casino">{{ user.referral_code }}</span></h6>
+                                <p class="text-muted">Share this code with friends and earn commission on their deposits!</p>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" 
+                                           value="{{ request.url_root }}auth/register?ref={{ user.referral_code }}" 
+                                           id="referralLink" readonly>
+                                    <button class="btn btn-outline-casino" type="button" onclick="copyReferralLink()">
+                                        <i class="fas fa-copy"></i> Copy
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <h4>{{ referred_users|length }}</h4>
+                                <p class="text-muted">Total Referrals</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Transactions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-history"></i> Recent Transactions</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if transactions %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Amount</th>
+                                        <th>Description</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for transaction in transactions %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if transaction.amount > 0 else 'danger' }}">
+                                                {{ transaction.type.title() }}
+                                            </span>
+                                        </td>
+                                        <td class="{{ 'text-success' if transaction.amount > 0 else 'text-danger' }}">
+                                            ${{ "%.2f"|format(transaction.amount) }}
+                                        </td>
+                                        <td>{{ transaction.description }}</td>
+                                        <td>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p class="text-muted text-center">No transactions yet</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function copyReferralLink() {
+    const linkInput = document.getElementById('referralLink');
+    linkInput.select();
+    linkInput.setSelectionRange(0, 99999);
+    document.execCommand('copy');
+    
+    // Show success message
+    const button = event.target.closest('button');
+    const originalHTML = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    button.classList.add('btn-success');
+    button.classList.remove('btn-outline-casino');
+    
+    setTimeout(() => {
+        button.innerHTML = originalHTML;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-outline-casino');
+    }, 2000);
+}
+</script>
+{% endblock %}

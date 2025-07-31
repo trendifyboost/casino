@@ -1,0 +1,218 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Deposit Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-plus-circle"></i> Deposit Management</h1>
+    <div class="btn-group" role="group">
+        <a href="{{ url_for('admin.deposits', status='all') }}" 
+           class="btn btn-outline-secondary {{ 'active' if status_filter == 'all' else '' }}">
+            All
+        </a>
+        <a href="{{ url_for('admin.deposits', status='pending') }}" 
+           class="btn btn-outline-warning {{ 'active' if status_filter == 'pending' else '' }}">
+            Pending
+        </a>
+        <a href="{{ url_for('admin.deposits', status='approved') }}" 
+           class="btn btn-outline-success {{ 'active' if status_filter == 'approved' else '' }}">
+            Approved
+        </a>
+        <a href="{{ url_for('admin.deposits', status='rejected') }}" 
+           class="btn btn-outline-danger {{ 'active' if status_filter == 'rejected' else '' }}">
+            Rejected
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5>Deposit Requests ({{ deposits.total }} total)</h5>
+    </div>
+    <div class="card-body">
+        {% if deposits.items %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User</th>
+                        <th>Amount</th>
+                        <th>Payment Method</th>
+                        <th>Transaction ID</th>
+                        <th>Screenshot</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for deposit in deposits.items %}
+                    <tr>
+                        <td>{{ deposit.id }}</td>
+                        <td>
+                            <strong>{{ deposit.user.full_name }}</strong><br>
+                            <small class="text-muted">{{ deposit.user.phone }}</small>
+                        </td>
+                        <td class="text-success">
+                            <strong>${{ "%.2f"|format(deposit.amount) }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ deposit.payment_method }}</span>
+                        </td>
+                        <td>{{ deposit.transaction_id or '-' }}</td>
+                        <td>
+                            {% if deposit.screenshot %}
+                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                    data-bs-toggle="modal" data-bs-target="#screenshotModal{{ deposit.id }}">
+                                <i class="fas fa-image"></i> View
+                            </button>
+                            {% else %}
+                            <span class="text-muted">No screenshot</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ 'warning' if deposit.status == 'pending' else 'success' if deposit.status == 'approved' else 'danger' }}">
+                                {{ deposit.status.title() }}
+                            </span>
+                        </td>
+                        <td>{{ deposit.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            {% if deposit.status == 'pending' %}
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-success" 
+                                        data-bs-toggle="modal" data-bs-target="#processModal{{ deposit.id }}" 
+                                        data-action="approve">
+                                    <i class="fas fa-check"></i> Approve
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger" 
+                                        data-bs-toggle="modal" data-bs-target="#processModal{{ deposit.id }}" 
+                                        data-action="reject">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            </div>
+                            {% else %}
+                            <span class="text-muted">Processed</span>
+                            {% if deposit.admin_notes %}
+                            <button type="button" class="btn btn-sm btn-outline-info" 
+                                    data-bs-toggle="tooltip" title="{{ deposit.admin_notes }}">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                            {% endif %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if deposits.pages > 1 %}
+        <nav aria-label="Deposit pagination">
+            <ul class="pagination justify-content-center">
+                {% if deposits.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.deposits', page=deposits.prev_num, status=status_filter) }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page in deposits.iter_pages() %}
+                    {% if page %}
+                        {% if page != deposits.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin.deposits', page=page, status=status_filter) }}">{{ page }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">…</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if deposits.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.deposits', page=deposits.next_num, status=status_filter) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No deposit requests found</h5>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modals for each deposit -->
+{% for deposit in deposits.items %}
+<!-- Screenshot Modal -->
+{% if deposit.screenshot %}
+<div class="modal fade" id="screenshotModal{{ deposit.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Payment Screenshot - Deposit #{{ deposit.id }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="{{ url_for('static', filename='../uploads/' + deposit.screenshot) }}" 
+                     class="img-fluid" alt="Payment Screenshot">
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Process Modal -->
+{% if deposit.status == 'pending' %}
+<div class="modal fade" id="processModal{{ deposit.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Process Deposit #{{ deposit.id }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin.process_deposit', deposit_id=deposit.id) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <strong>User:</strong> {{ deposit.user.full_name }} ({{ deposit.user.phone }})<br>
+                        <strong>Amount:</strong> ${{ "%.2f"|format(deposit.amount) }}<br>
+                        <strong>Payment Method:</strong> {{ deposit.payment_method }}<br>
+                        <strong>Transaction ID:</strong> {{ deposit.transaction_id or 'Not provided' }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="admin_notes{{ deposit.id }}" class="form-label">Admin Notes</label>
+                        <textarea class="form-control" id="admin_notes{{ deposit.id }}" 
+                                  name="admin_notes" rows="3" 
+                                  placeholder="Add notes about this deposit..."></textarea>
+                    </div>
+                    
+                    <input type="hidden" name="action" id="action{{ deposit.id }}">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success" onclick="document.getElementById('action{{ deposit.id }}').value='approve'">
+                        <i class="fas fa-check"></i> Approve Deposit
+                    </button>
+                    <button type="submit" class="btn btn-danger" onclick="document.getElementById('action{{ deposit.id }}').value='reject'">
+                        <i class="fas fa-times"></i> Reject Deposit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endblock %}

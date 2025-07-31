@@ -1,0 +1,239 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Add New Game{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-plus-circle"></i> Add New Game</h1>
+    <a href="{{ url_for('admin.games') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Games
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Game Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="title" class="form-label">Game Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="title" name="title" required 
+                                   placeholder="Enter game title">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="category" class="form-label">Category <span class="text-danger">*</span></label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="">Select category</option>
+                                <option value="slots">Slots</option>
+                                <option value="crash">Crash Games</option>
+                                <option value="live">Live Casino</option>
+                                <option value="table">Table Games</option>
+                                <option value="poker">Poker</option>
+                                <option value="sports">Sports Betting</option>
+                                <option value="lottery">Lottery</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="winning_percentage" class="form-label">Winning Percentage (%)</label>
+                            <input type="number" class="form-control" id="winning_percentage" 
+                                   name="winning_percentage" min="0" max="100" step="0.1" value="50.0">
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="min_bet" class="form-label">Minimum Bet ($)</label>
+                            <input type="number" class="form-control" id="min_bet" name="min_bet" 
+                                   min="0.01" step="0.01" value="1.00">
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="max_bet" class="form-label">Maximum Bet ($)</label>
+                            <input type="number" class="form-control" id="max_bet" name="max_bet" 
+                                   min="1" step="0.01" value="1000.00">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="thumbnail" class="form-label">Game Thumbnail</label>
+                        <input type="file" class="form-control" id="thumbnail" name="thumbnail" 
+                               accept="image/*">
+                        <div class="form-text">Upload a thumbnail image for the game (JPG, PNG, WebP)</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="game_file" class="form-label">Game File</label>
+                        <input type="file" class="form-control" id="game_file" name="game_file" 
+                               accept=".zip,.html,.php">
+                        <div class="form-text">Upload game files (ZIP, HTML, PHP) or leave empty for external URL</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="external_url" class="form-label">External Game URL</label>
+                        <input type="url" class="form-control" id="external_url" name="external_url" 
+                               placeholder="https://example.com/game">
+                        <div class="form-text">If the game is hosted externally, provide the URL</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_active" 
+                                   name="is_active" checked>
+                            <label class="form-check-label" for="is_active">
+                                <strong>Activate Game</strong>
+                                <small class="text-muted d-block">Make this game available to players immediately</small>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Add Game
+                        </button>
+                        <a href="{{ url_for('admin.games') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> Game Upload Guidelines</h5>
+            </div>
+            <div class="card-body">
+                <h6>Supported File Types:</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-file-archive text-warning"></i> ZIP files (compressed game)</li>
+                    <li><i class="fab fa-html5 text-danger"></i> HTML files (web games)</li>
+                    <li><i class="fab fa-php text-primary"></i> PHP files (server games)</li>
+                </ul>
+                
+                <hr>
+                
+                <h6>Image Requirements:</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success"></i> Max size: 2MB</li>
+                    <li><i class="fas fa-check text-success"></i> Formats: JPG, PNG, WebP</li>
+                    <li><i class="fas fa-check text-success"></i> Recommended: 300x200px</li>
+                </ul>
+                
+                <hr>
+                
+                <h6>Categories:</h6>
+                <div class="d-flex flex-wrap gap-1">
+                    <span class="badge bg-primary">Slots</span>
+                    <span class="badge bg-danger">Crash</span>
+                    <span class="badge bg-success">Live</span>
+                    <span class="badge bg-warning">Table</span>
+                    <span class="badge bg-info">Poker</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="fas fa-lightbulb"></i> Tips</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-star text-warning"></i> Use descriptive game titles</li>
+                    <li><i class="fas fa-star text-warning"></i> Set appropriate bet limits</li>
+                    <li><i class="fas fa-star text-warning"></i> Upload high-quality thumbnails</li>
+                    <li><i class="fas fa-star text-warning"></i> Test games before activation</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // File upload preview
+    var thumbnailInput = document.getElementById('thumbnail');
+    var gameFileInput = document.getElementById('game_file');
+    
+    thumbnailInput.addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                // Remove existing preview
+                var existingPreview = document.querySelector('.thumbnail-preview');
+                if (existingPreview) {
+                    existingPreview.remove();
+                }
+                
+                // Create preview
+                var preview = document.createElement('div');
+                preview.className = 'thumbnail-preview mt-2';
+                preview.innerHTML = `
+                    <img src="${e.target.result}" class="img-thumbnail" style="max-width: 200px; max-height: 150px;">
+                    <div class="text-muted small mt-1">Preview: ${file.name}</div>
+                `;
+                thumbnailInput.parentNode.appendChild(preview);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    gameFileInput.addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (file) {
+            // Remove existing info
+            var existingInfo = document.querySelector('.file-info');
+            if (existingInfo) {
+                existingInfo.remove();
+            }
+            
+            // Create file info
+            var info = document.createElement('div');
+            info.className = 'file-info mt-2 p-2 bg-light border rounded';
+            info.innerHTML = `
+                <div class="text-success">
+                    <i class="fas fa-file"></i> ${file.name}
+                </div>
+                <div class="text-muted small">
+                    Size: ${(file.size / 1024 / 1024).toFixed(2)} MB
+                </div>
+            `;
+            gameFileInput.parentNode.appendChild(info);
+        }
+    });
+    
+    // Form validation
+    var form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        var gameFile = document.getElementById('game_file').files[0];
+        var externalUrl = document.getElementById('external_url').value;
+        
+        if (!gameFile && !externalUrl) {
+            e.preventDefault();
+            alert('Please either upload a game file or provide an external URL.');
+            return;
+        }
+        
+        var minBet = parseFloat(document.getElementById('min_bet').value);
+        var maxBet = parseFloat(document.getElementById('max_bet').value);
+        
+        if (minBet >= maxBet) {
+            e.preventDefault();
+            alert('Maximum bet must be greater than minimum bet.');
+            return;
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Casino Platform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-user-cog"></i> Profile Settings</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Profile Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Account Information</h5>
+                            <p><strong>Full Name:</strong> {{ user.full_name }}</p>
+                            <p><strong>Phone:</strong> {{ user.phone }}</p>
+                            <p><strong>Username:</strong> {{ user.username or 'Not set' }}</p>
+                            <p><strong>Member Since:</strong> {{ user.created_at.strftime('%B %d, %Y') }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Account Status</h5>
+                            <p><strong>Status:</strong> 
+                               <span class="badge bg-{{ 'success' if user.is_active else 'danger' }}">
+                                   {{ 'Active' if user.is_active else 'Inactive' }}
+                               </span>
+                            </p>
+                            <p><strong>Referral Code:</strong> 
+                               <span class="badge bg-primary">{{ user.referral_code }}</span>
+                            </p>
+                            <p><strong>Last Login:</strong> 
+                               {{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else 'Never' }}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Update Profile Form -->
+                    <div class="mb-4">
+                        <h5>Update Profile</h5>
+                        <form method="POST">
+                            <input type="hidden" name="update_profile" value="1">
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="username" class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="username" 
+                                           name="username" value="{{ user.username or '' }}" 
+                                           placeholder="Choose a username">
+                                    <div class="form-text">This will be used for login along with your phone number</div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Update Profile
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Change Password Form -->
+                    <div class="mb-4">
+                        <h5>Change Password</h5>
+                        <form method="POST">
+                            <input type="hidden" name="change_password" value="1">
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="current_password" class="form-label">Current Password</label>
+                                    <input type="password" class="form-control" id="current_password" 
+                                           name="current_password" required>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label for="new_password" class="form-label">New Password</label>
+                                    <input type="password" class="form-control" id="new_password" 
+                                           name="new_password" minlength="6" required>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label for="confirm_password" class="form-label">Confirm New Password</label>
+                                    <input type="password" class="form-control" id="confirm_password" 
+                                           name="confirm_password" minlength="6" required>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-key"></i> Change Password
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Referral Information -->
+                    <div class="mb-4">
+                        <h5>Referral Program</h5>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <p><strong>Your Referral Code:</strong> 
+                                   <span class="badge bg-casino fs-6">{{ user.referral_code }}</span>
+                                </p>
+                                <p class="text-muted">Share this code with friends to earn commission on their deposits!</p>
+                                
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" 
+                                           value="{{ request.url_root }}auth/register?ref={{ user.referral_code }}" 
+                                           id="referralLinkProfile" readonly>
+                                    <button class="btn btn-outline-casino" type="button" 
+                                            onclick="copyReferralLinkProfile()">
+                                        <i class="fas fa-copy"></i> Copy Link
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <h3 class="text-success">${{ "%.2f"|format(user.referral_commission) }}</h3>
+                                <p class="text-muted">Total Commission Earned</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function copyReferralLinkProfile() {
+    const linkInput = document.getElementById('referralLinkProfile');
+    linkInput.select();
+    linkInput.setSelectionRange(0, 99999);
+    document.execCommand('copy');
+    
+    // Show success message
+    const button = event.target.closest('button');
+    const originalHTML = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    button.classList.add('btn-success');
+    button.classList.remove('btn-outline-casino');
+    
+    setTimeout(() => {
+        button.innerHTML = originalHTML;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-outline-casino');
+    }, 2000);
+}
+
+// Password confirmation validation
+document.addEventListener('DOMContentLoaded', function() {
+    const newPasswordInput = document.getElementById('new_password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    
+    function validatePasswordMatch() {
+        if (newPasswordInput.value !== confirmPasswordInput.value) {
+            confirmPasswordInput.setCustomValidity('Passwords do not match');
+        } else {
+            confirmPasswordInput.setCustomValidity('');
+        }
+    }
+    
+    newPasswordInput.addEventListener('input', validatePasswordMatch);
+    confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+});
+</script>
+{% endblock %}
